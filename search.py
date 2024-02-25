@@ -74,30 +74,85 @@ def tinyMazeSearch(problem):
 
 def depthFirstSearch(problem: SearchProblem):
     """
-    Search the deepest nodes in the search tree first.
+    Performs depth first search to reach problem.goalState
 
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    Returns optimal list of actions to reach goal state
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    visited = set()
+    currentState = problem.getStartState()
+    notVisited = util.Stack() #Setting up FIFO notVisited list
+    currentPath= [] #List of actions to get to currentState
+    notVisited.push((currentState,currentPath ))
+
+    while not notVisited.isEmpty():
+        currentState, currentPath = notVisited.pop()
+        if problem.isGoalState(currentState): #If goal state reached, return the path to get to this state
+            return currentPath 
+        if currentState not in visited:
+            succesorStates = problem.getSuccessors(currentState) #Generate all sucessor positions, based on legal moves
+            for nextState,action, currentCost in succesorStates:
+                newPath = currentPath + [action]
+                notVisited.push((nextState, newPath)) #Add all successor positions and paths to notVisited list
+        visited.add(currentState) #Mark currentState as visited
+    pathIfNoSolution = [] #If there is no valid path that results in goal state, no actions can be taken
+    return pathIfNoSolution
+
 
 def breadthFirstSearch(problem: SearchProblem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    """
+    Performs breadth first search to reach problem.goalState
+
+    Returns optimal list of actions to reach goal state
+    """
+
+    visited = set()
+    currentState = problem.getStartState() #Start position of Pacman
+    notVisited = util.Queue() #Setting up LIFO notVisited list
+    currentPath = [] #List of actions to get to currentState
+    notVisited.push((currentState, currentPath))
+
+    while not notVisited.isEmpty():
+        currentState, currentPath = notVisited.pop()
+        if problem.isGoalState(currentState): #If goal state reached, return the path to get to this state
+            return currentPath
+        if currentState not in visited:
+            successorStates = problem.getSuccessors(currentState) #Generate all sucessor positions, based on legal moves
+            for nextState, action, currentCost in successorStates:
+                newPath = currentPath + [action] #Adding the action to the path to get to this sucessor state
+                notVisited.push( (nextState, newPath)) #Add successor position and path to notVisited list
+            visited.add(currentState) #Mark currentState as visited
+    pathIfNoSolution = [] 
+    return pathIfNoSolution #If there is no valid path that results in goal state, no actions can be taken
+
 
 def uniformCostSearch(problem: SearchProblem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """
+    Performs Dijstak's algorithm search where cost between nodes is a constant value
+    Returns optimal list of actions to reach goal state
+
+    """
+    visited = set()
+    currentState = problem.getStartState() #Start position of Pacman
+    notVisited = util.PriorityQueue() #Setting up PriorityQueue notVisited list
+    currentPath = [] #List of actions to get to currentState
+    currentCost = 0 #The cost to get to this state. 1 action increases cost by 1
+    notVisited.push( (currentState, currentPath, currentCost), currentCost) 
+
+    while not notVisited.isEmpty():
+        currentState, currentPath, currentCost = notVisited.pop()
+        if problem.isGoalState(currentState): #If goal state reached, return the path to get to this state
+            return currentPath
+        if currentState not in visited:
+            successorStates = problem.getSuccessors(currentState) #Generate all sucessor positions, based on legal moves
+            for nextState, action, actionCost in successorStates:
+                newPath = currentPath + [action] #Adding the action to the path to get to this sucessor state
+                newCost = currentCost + actionCost #Updating the cost to get to this state
+                notVisited.push( (nextState, newPath, newCost), newCost) #Add successor position, path, and cost to notVisited list
+            visited.add(currentState) #Mark currentState as visited
+    pathIfNoSolution = [] #If there is no valid path that results in goal state, no actions can be taken
+    return pathIfNoSolution
 
 def nullHeuristic(state, problem=None):
     """
@@ -108,8 +163,29 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    notVisited = util.PriorityQueue() #Setting up PriorityQueue notVisited list
+
+    currentState = problem.getStartState() #Start position of Pacman
+    currentPath = [] #List of actions to get to currentState
+    currentCost = 0 #The cost to get to this state. 1 action increases cost by 1
+
+    notVisited.push((currentState, currentPath, currentCost), currentCost)
+
+    while not notVisited.isEmpty():
+        currentState, currentPath, currentCost = notVisited.pop()
+        if problem.isGoalState(currentState): #If goal state reached, return the path to get to this state
+            return currentPath
+        if currentState not in visited:
+            successorStates = problem.getSuccessors(currentState) #Generate all sucessor positions, based on legal moves
+            for child,action,actionCost in successorStates: 
+                newPath = currentPath + [action]  #Adding the action to the path to get to this sucessor state
+                newCost = currentCost +  actionCost #Updating the cost to get to this state
+                estimatedCostToGoal = newCost + heuristic(child,problem) #Calculate estimated cost to reach goal state based on provided heuristic. Ex: Using Manhattan distance from goal to estimate cost
+                notVisited.push( (child, newPath, newCost), estimatedCostToGoal)  #Add successor position, path, and cost to notVisited list
+        visited.add(currentState)  #Mark currentState as visited
+    pathIfNoSolution = [] #If there is no valid path that results in goal state, no actions can be taken
+    return pathIfNoSolution
 
 
 # Abbreviations
